@@ -1,0 +1,7 @@
+app\EditorApp.class
+schedule\ScheduleExporter.class
+schedule\PlannedEvent.class
+schedule\Schedule.class
+schedule\TimeSlot.class
+schedule\UnavailableTSException.class
+schedule\Event.class
