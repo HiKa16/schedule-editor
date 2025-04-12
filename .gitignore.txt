@@ -10,6 +10,7 @@ target/
 *.ipr
 *.iws
 *.DS_Store
+.settings
 
 # OS / divers
 Thumbs.db
