@@ -251,7 +251,7 @@ public class EditorApp extends Application {
 				alert.setTitle("Créneau non valide");
 				alert.setContentText("Ce créneau n'est pas valide");
 				alert.show();
-            } catch (UnavailableTSException e2) {
+            } catch (UnavailableSlotException e2) {
 				Alert alert = new Alert(AlertType.ERROR);
 				alert.setTitle("Créneau indisponible");
 				alert.setContentText("Ce créneau n'est pas disponible");
@@ -350,7 +350,7 @@ public class EditorApp extends Application {
 				alert.setTitle("Créneau non valide");
 				alert.setContentText("Ce créneau n'est pas valide");
 				alert.show();
-	           } catch (UnavailableTSException e2) {
+	           } catch (UnavailableSlotException e2) {
 				Alert alert = new Alert(AlertType.ERROR);
 				alert.setTitle("Créneau indisponible");
 				alert.setContentText("Ce créneau n'est pas disponible");

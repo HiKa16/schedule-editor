@@ -14,5 +14,4 @@ public class PlannedEvent extends Event{
 		return this.timeSlot;
 	}
 	
-
 }

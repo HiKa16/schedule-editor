@@ -16,7 +16,7 @@ public class Schedule {
 		return this.plannedEvents; 
 	}
 	
-	public void setEventToDate(PlannedEvent event, LocalDate date) {
+	private void setEventToDate(PlannedEvent event, LocalDate date) {
 		if (this.plannedEvents.get(date) == null) {
 			this.plannedEvents.put(date, new ArrayList<PlannedEvent>());
 		}
@@ -27,18 +27,18 @@ public class Schedule {
 		return this.plannedEvents.get(date);
 	}
 	 
-	public void addPlannedEvent(String title, String desc, TimeSlot ts) throws UnavailableTSException {
+	public void addPlannedEvent(String title, String desc, TimeSlot ts) throws UnavailableSlotException {
 		if (!TimeSlotIsAvailable(ts)) { 
-			throw new UnavailableTSException();
+			throw new UnavailableSlotException();
 		}
 		LocalDate date = ts.getDate();
 		this.setEventToDate(new PlannedEvent(title, desc, ts), date);
 	}
 	
-	public void addPlannedEvent(PlannedEvent event) throws UnavailableTSException {
+	public void addPlannedEvent(PlannedEvent event) throws UnavailableSlotException {
 		TimeSlot ts = event.getTimeSlot();
 		if (!TimeSlotIsAvailable(ts)) { 
-			throw new UnavailableTSException();
+			throw new UnavailableSlotException();
 		}
 		LocalDate date = ts.getDate();
 		this.setEventToDate(event, date);}
@@ -79,13 +79,13 @@ public class Schedule {
 		return conflicts;
 	}
 	
-	public void updateEvent(PlannedEvent event, String newTitle, String newDesc, TimeSlot newSlot) throws UnavailableTSException {
+	public void updateEvent(PlannedEvent event, String newTitle, String newDesc, TimeSlot newSlot) throws UnavailableSlotException {
 		TimeSlot slot = event.getTimeSlot();
 		assert this.plannedEvents.get(slot.getDate()).contains(event) : "Can't update an event that's not in the schedule";		
 		if (!TimeSlotIsAvailable(newSlot)) { 
 			List<PlannedEvent> conflicts = getConflictingEvents(newSlot);
 			if (!(conflicts.size() == 1 && conflicts.get(0) == event)) {
-				throw new UnavailableTSException();
+				throw new UnavailableSlotException();
 			}
 		}
 		event.setTitle(newTitle);
