@@ -14,3 +14,6 @@ target/
 
 # OS / divers
 Thumbs.db
+
+#Tests
+*.html

@@ -1,4 +1,4 @@
-package schedule;
+package app;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -8,6 +8,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+
+import schedule.*;
 
 public class ScheduleExporter {
 	public static void exportToHTML(Schedule schedule, List<LocalDate> dates, List<LocalTime> hours, String file, String title) throws FileNotFoundException, UnsupportedEncodingException {
@@ -57,6 +59,15 @@ public class ScheduleExporter {
 		fileWriter.println("padding: 5px;}");
 		fileWriter.println(".event:hover { cursor: pointer; }");
 		
+		fileWriter.println("#eventDetails {");
+		fileWriter.println("min-width: 300px;");
+		fileWriter.println("min-height: 150px;");
+		fileWriter.println("max-width: 80%;");
+		fileWriter.println("max-height: 80%;");
+		fileWriter.println("overflow-y: auto;");
+		fileWriter.println("overflow-x: auto;");
+		fileWriter.println("padding: 20px;}");
+		
 		
 		fileWriter.println("</style>");
 		fileWriter.println("</head>");
@@ -84,14 +95,40 @@ public class ScheduleExporter {
 					} else {
 						TimeSlot slot = event.getTimeSlot();
 						int rowSpan = hours.indexOf(slot.getEndTime()) - hours.indexOf(slot.getStartTime());
-						fileWriter.println(String.format("<td rowspan=%d> <button type=\"button\" class=\"event\"> %s </button> </td>", rowSpan, event.getTitle()));
+						String date = slot.getDate().format(DateTimeFormatter.ofPattern("EEEE d LLLL", Locale.FRENCH));
+						String desc = event.getDescription().replace("\n", "\\n");
+						String time = slot.getStartTime() + " - " + slot.getEndTime();
+						fileWriter.println(String.format("<td rowspan=%d> <button type=\"button\" class=\"event\" "
+															+ "onclick=\"openDetails('%s', '%s', '%s', \'<pre style=\\\'font-family: sans-serif\\\'> %s </pre>\');\"> %s </button> </td>", 
+															rowSpan, event.getTitle(), date, time, desc, event.getTitle()));
 						for (int i = row; i < row+rowSpan; i++) { isFilled[i][col] = 1; }
 					}
 				}
 			}
 		}
 		fileWriter.println("</table>");
-
+		
+		fileWriter.println("<dialog id=\"eventDetails\">");
+		fileWriter.println("<h2 id=\"eventTitle\" style=\"margin-top:0px\"></h2>");
+		fileWriter.println("<p>📅 <span id=\"eventDate\"></span> </p>");
+		fileWriter.println("<p>🕒 <span id=\"eventTime\"></span> </p>");
+		fileWriter.println("<p id=\"eventDescription\"></p>");
+		fileWriter.println("<form method=\"dialog\">");
+		fileWriter.println("<button>Fermer</button>");
+		fileWriter.println("</form>");
+		fileWriter.println("</dialog>");
+		
+		fileWriter.println("<script>");
+		fileWriter.println("function openDetails(title, date, time, desc) {");
+		fileWriter.println("document.getElementById(\"eventTitle\").textContent = title;");
+		fileWriter.println("document.getElementById(\"eventDate\").textContent = date;");
+		fileWriter.println("document.getElementById(\"eventTime\").textContent = time;");
+		fileWriter.println("document.getElementById(\"eventDescription\").innerHTML = desc;");
+		fileWriter.println("const dialog = document.getElementById(\"eventDetails\");");
+		fileWriter.println("dialog.showModal();");
+		fileWriter.println("dialog.scrollTop = 0;}");
+		fileWriter.println("</script>");
+		
 		fileWriter.println("</body>");
 		fileWriter.println("</html>");
 		fileWriter.close();
