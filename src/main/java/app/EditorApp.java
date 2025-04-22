@@ -1,6 +1,7 @@
 package app;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -26,17 +27,23 @@ import schedule.*;
 public class EditorApp extends Application {
     private static Schedule schedule = new Schedule();
 	private static GridPane scheduleGrid = new GridPane();
-    private static LocalDate startDate = LocalDate.now();
-    private static LocalDate endDate = LocalDate.now().plusDays(6);
-    private static LocalTime startHour = LocalTime.of(8, 0);
-    private static LocalTime endHour = LocalTime.of(20, 0);
-    private static List<LocalDate> dates = getDatesRange(startDate, endDate);
-    private static List<LocalTime> hours = getHoursRange(startHour, endHour);
+    private static List<LocalDate> dates; 
+    private static List<LocalTime> hours; 
 
 
     @Override
     public void start(Stage stage) {
  
+    	try {
+			Config config = Config.load("config.json");
+			dates = getDatesRange(config.startDate, config.endDate);
+			hours = getHoursRange(config.startHour, config.endHour);
+		} catch (IOException e) {
+			System.out.println("Erreur de configuration");
+			e.printStackTrace();
+			return;
+		}    	
+    	
     	setScheduleGrid();
       
         Button addEventButton = new Button("Ajouter un évènement");
