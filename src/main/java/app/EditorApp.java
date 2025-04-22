@@ -1,5 +1,7 @@
 package app;
 
+import java.awt.Desktop;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -40,7 +42,7 @@ public class EditorApp extends Application {
 			hours = getHoursRange(config.startHour, config.endHour);
 		} catch (IOException e) {
 			System.out.println("Erreur de configuration");
-			e.printStackTrace();
+			//e.printStackTrace();
 			return;
 		}    	
     	
@@ -48,10 +50,10 @@ public class EditorApp extends Application {
       
         Button addEventButton = new Button("Ajouter un évènement");
         styleButton(addEventButton);
-        addEventButton.setOnAction(value -> showAddEventDialog());
+        addEventButton.setOnAction(value -> addEventDialog());
         
         Button exportButton = new Button("Exporter");
-        exportButton.setOnAction(value -> showExportSchedule());
+        exportButton.setOnAction(value -> exportScheduleDialog());
          
         VBox layout = new VBox(10, scheduleGrid, addEventButton, exportButton);
         layout.setAlignment(Pos.CENTER);      
@@ -89,7 +91,10 @@ public class EditorApp extends Application {
     	return hoursRange;
     }
     
-    //Configuration of the schedule grid
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // CONFIGURATION
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     public static void setScheduleGrid() {
     	 int nbRows = hours.size();
     	 int nbCols = dates.size() + 1;
@@ -123,12 +128,17 @@ public class EditorApp extends Application {
 
     }
     
-    // STYLING ELEMENTS
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // STYLING
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // Button
     public static void styleButton(Button button) {
     	button.setStyle(
     		    "-fx-cursor: hand;" );
     }
     
+    // Schedule grid
     public static void styleScheduleGrid(int nbCols, int nbRows) {
     	scheduleGrid.setStyle(
     		    "-fx-background-color: white;" +
@@ -163,7 +173,7 @@ public class EditorApp extends Application {
     }
     
 
-
+    // Labels 
     public static void styleDayLabel(Label label) {
     	label.setTextAlignment(TextAlignment.CENTER); 
     	label.setAlignment(Pos.CENTER);               
@@ -183,6 +193,7 @@ public class EditorApp extends Application {
 		GridPane.setValignment(label, VPos.CENTER);
     }
 
+    // Event
     public static void styleEventButton(Button button, int rowSpan) {
     	button.setStyle(
     		    "-fx-background-color: linear-gradient(to bottom, #4a90e2, #0a6bff);" +  
@@ -202,8 +213,14 @@ public class EditorApp extends Application {
 		GridPane.setVgrow(button, Priority.ALWAYS);
     }
     
-    // ADDITIONAL DIALOG
-    private void showAddEventDialog() {
+    
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    // DIALOGS
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // Add Event
+    private void addEventDialog() {
     	// Dialog to create a new event
         Stage dialog = new Stage();
         dialog.setTitle("Nouvel événement");
@@ -247,7 +264,7 @@ public class EditorApp extends Application {
 				eventButton.setUserData(event);
 				eventButton.setOnAction(click -> {
 					Button source = (Button) click.getSource();
-					showEventDetails(source);
+					eventDetailsDialog(source);
 				});
 	
 				scheduleGrid.add(eventButton, dates.indexOf(date) + 1, hours.indexOf(startHour) + 1);
@@ -275,8 +292,8 @@ public class EditorApp extends Application {
     }
     
     
-    public static void showEventDetails(Button buttonEvent) {
-    	// Dialog to show the title, description and time slot of an event
+    // Show event details
+    public static void eventDetailsDialog(Button buttonEvent) {
         Stage dialog = new Stage();
         dialog.setTitle("Détails de l'évènement");
         PlannedEvent event = (PlannedEvent) buttonEvent.getUserData();
@@ -295,7 +312,7 @@ public class EditorApp extends Application {
         	}});
         Button editButton = new Button("Modifier l'évènement");
         editButton.setOnAction(value -> {
-        	showEditEventDialog(buttonEvent);
+        	editEventDialog(buttonEvent);
         	dialog.close();
         });
         VBox layout = new VBox(10, titleLabel, timeLabel, descLabel, new HBox(10, delButton, editButton));
@@ -306,8 +323,8 @@ public class EditorApp extends Application {
     }
     
  
-    public static void showEditEventDialog(Button eventButton) {
-    	// Dialog to edit an existing event
+    // Edit event
+    public static void editEventDialog(Button eventButton) {
     	Stage dialog = new Stage();
         dialog.setTitle("Éditer l'évènement");
         
@@ -373,6 +390,7 @@ public class EditorApp extends Application {
 
     }
     
+    // Remove event
     public static boolean confirmRemoveEvent(Button buttonEvent) {
     	// Alert before removing an event
     	PlannedEvent event = (PlannedEvent) buttonEvent.getUserData();
@@ -395,11 +413,12 @@ public class EditorApp extends Application {
 	    scheduleGrid.getChildren().remove(buttonEvent);
     }
     
-    public static void showExportSchedule() {
+    // Export schedule
+    public static void exportScheduleDialog() {
     	Stage dialog = new Stage();
         dialog.setTitle("Exporter le planning");
 
-        TextField fileNameField = new TextField();
+        TextField filePathField = new TextField();
         TextField titleField = new TextField();
         titleField.setText(String.format("Planning du %s au %s",
         				dates.get(0).format(DateTimeFormatter.ofPattern("dd/MM", Locale.FRENCH)), 
@@ -407,18 +426,29 @@ public class EditorApp extends Application {
         Button exportButton = new Button("Exporter");
         exportButton.setOnAction(value -> {
         	try {
-				ScheduleExporter.exportToHTML(schedule, dates, hours, fileNameField.getText() + ".html", titleField.getText());
+        		String filePath = filePathField.getText() + ".html";
+;				ScheduleExporter.exportToHTML(schedule, dates, hours, filePath, titleField.getText());
+				Desktop.getDesktop().browse(new File(filePath).toURI());
 			} catch (FileNotFoundException | UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Échec d'exportation");
+				alert.setContentText("Chemin invalide");
+				alert.show();
+				//e.printStackTrace();
+			} catch (IOException e) {
+				Alert alert = new Alert(AlertType.WARNING);
+				alert.setTitle("Fichier inaccessible");
+				alert.setContentText("Impossible d'ouvrir le fichier HTML depuis cette application");
+				alert.show();
+				//e.printStackTrace();
 			}
         	dialog.close();
         	
         });
-        VBox layout = new VBox(10, new Label("Nom du ficher :"), new HBox(5, fileNameField, new Label(".html")), new Label("Titre:"), titleField, exportButton);
-        HBox.setHgrow(fileNameField, Priority.ALWAYS);
+        VBox layout = new VBox(10, new Label("Chemin du ficher :"), new HBox(5, filePathField, new Label(".html")), new Label("Titre:"), titleField, exportButton);
+        HBox.setHgrow(filePathField, Priority.ALWAYS);
         layout.setPadding(new Insets(10));
-        dialog.setScene(new Scene(layout));
+        dialog.setScene(new Scene(layout, 300, 175));
         dialog.show();
         
     }

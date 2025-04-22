@@ -87,7 +87,6 @@ public class ScheduleExporter {
 			fileWriter.println("<tr>");
 			fileWriter.println(String.format("<td> %dh - %dh </td>", hours.get(row).getHour(), hours.get(row+1).getHour()));
 			for (int col = 0; col < dates.size(); col++) {
-				System.out.println(String.format("%d %d", row, col));
 				if (!(isFilled[row][col] == 1)) {
 					PlannedEvent event = schedule.getEventStartingAt(dates.get(col), hours.get(row));
 					if (event == null) {
